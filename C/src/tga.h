@@ -144,7 +144,9 @@ int tgaOutputBMP(const struct TGA *pTga, const char *pFileName);
 bool tgaConvertRGBA(struct TGA *pTga);
 bool tgaConvertType(struct TGA *pTga, const sint32 type);
 
-bool tgaWriteHeader(FILE *fp, TGAHeader *pHeader);
-bool tgaWriteFooter(FILE *fp, TGAFooter *pHeader);
+void tgaRelease(struct TGA pTga);
+
+bool tgaWriteHeader(FILE *fp, struct TGAHeader *pHeader);
+bool tgaWriteFooter(FILE *fp, struct TGAFooter *pFooter);
 
 #endif

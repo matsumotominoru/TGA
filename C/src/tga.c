@@ -131,7 +131,7 @@ bool _tgaReadHeader(const uint8 *pSrc, struct TGAHeader *pHeader)
 
 	_ASSERT(offset == TGA_HEADER_SIZE);
 
-	return this->CheckSupport(m_Header);
+	return _tgaCheckSupport(pHeader);
 }
 
 /*=======================================================================
@@ -275,23 +275,25 @@ bool _tgaReadPalette(struct TGA *pTga, const uint8 *pSrc)
 
 /*=======================================================================
 【機能】ファイル読み込み
-【引数】pFileName：ファイル名
+【引数】pTga     ： TGA構造体のアドレス
+        pFileName：ファイル名
  =======================================================================*/
-int CTga::Create(const char *pFileName)
+int tgaCreateFile(struct TGA *pTga, const char *pFileName)
 {
 	FILE *fp;
 	uint8 *mem;
 	uint32 size;
 
 #ifndef NDEBUG
+	_ASSERT(pTga != NULL);
 	_ASSERT(pFileName != NULL);
 #else
-	if (pFileName == NULL) return ERROR_OPEN;
+	if (pTga == NULL || pFileName == NULL) return TGA_ERROR_OPEN;
 #endif
 
 	if ((fp = fopen(pFileName, "rb")) == NULL) {
 		DBG_PRINT("file not found!\n");
-		return ERROR_OPEN;
+		return TGA_ERROR_OPEN;
 	}
 
 	// get file size
@@ -300,166 +302,175 @@ int CTga::Create(const char *pFileName)
 	fseek(fp, 0, SEEK_SET);
 
 	// read file to memory
-	if ((mem = new uint8[size]) == NULL) {
+	if ((mem = (uint8*)malloc(size)) == NULL) {
 		fclose(fp);
-		return ERROR_MEMORY;
+		return TGA_ERROR_MEMORY;
 	}
 	fread(mem, size, 1, fp);
 	fclose(fp);
 
 	// 読み込み
-	int ret = this->Create(mem, size);
-	SAFE_DELETES(mem);
+	int ret = tgaCreateMemory(pTga, mem, size);
+	SAFE_FREE(mem);
 
 	return ret;
 }
 
 /*=======================================================================
 【機能】メモリから作成
-【引数】pSrc：画像データアドレス
+【引数】pTga：TGA構造体のアドレス
+        pSrc：画像データアドレス
         size：画像データサイズ
  =======================================================================*/
-int CTga::Create(const void *pSrc, const uint32 size)
+int tgaCreateMemory(struct TGA *pTga, const void *pSrc, const uint32 size)
 {
 	uint32 offset;
 
 #ifndef NDEBUG
+	_ASSERT(pTga != NULL);
 	_ASSERT(pSrc != NULL);
 	_ASSERT(size);
 #else
-	if (pSrc == NULL || size == 0) return ERROR_HEADER;
+	if (pTga == NULL || pSrc == NULL || size == 0) return TGA_ERROR_HEADER;
 #endif
 
 	// 既に作成しているなら削除
-	if (m_pImage != NULL) {
-		this->Clear();
+	if (pTga->pImage != NULL) {
+		tgaRelease(pTga);
 	}
 
 	// ヘッダー読み込み
-	if (!this->ReadHeader(static_cast<const uint8*>(pSrc))) {
-		return ERROR_HEADER;
+	if (!_tgaReadHeader((const uint8*)pSrc, &pTga->header)) {
+		return TGA_ERROR_HEADER;
 	}
 
 	// ImageとPaletteのサイズを求める
-	if (!this->CalcSize(true)) {
-		this->Clear();
-		return ERROR_MEMORY;
+	if (!_tgaCalcSize(pTga, true)) {
+		tgaRelease(pTga);
+		return TGA_ERROR_MEMORY;
 	}
 
 	// パレット読み込み
-	if (!this->ReadPalette(static_cast<const uint8*>(pSrc))) {
-		this->Clear();
-		return ERROR_PALETTE;
+	if (!_tgaReadPalette(pTga, (const uint8*)pSrc)) {
+		tgaRelease(pTga);
+		return TGA_ERROR_PALETTE;
 	}
 
 	// イメージ読み込み
-	if (!this->ReadImage(static_cast<const uint8*>(pSrc), size, &offset)) {
-		this->Clear();
-		return ERROR_IMAGE;
+	if (!_tgaReadImage(pTga, (const uint8*)pSrc, size, &offset)) {
+		tgaRelease(pTga);
+		return TGA_ERROR_IMAGE;
 	}
 
 	// フッター読み込み
-	offset += HEADER_SIZE + m_Header.IDField + m_PaletteSize;
-	if ((size - offset) >= FOOTER_SIZE) {
-		this->ReadFooter(static_cast<const uint8*>(pSrc), offset);
+	offset += TGA_HEADER_SIZE + pTga->header.IDField + pTga->paletteSize;
+	if ((size - offset) >= TGA_FOOTER_SIZE) {
+		_tgaReadFooter((const uint8*)pSrc, offset, &pTga->footer);
 	}
 
-	return ERROR_NONE;
+	return TGA_ERROR_NONE;
 }
 
 /*=======================================================================
 【機能】指定データから作成
-【引数】header     ：TGAヘッダー
+【引数】pTga       ：TGA構造体のアドレス
+        pHeader    ：TGAヘッダーのアドレス
         pImage     ：イメージデータアドレス
         imageSize  ：イメージデータサイズ
         pPalette   ：パレットデータアドレス
         paletteSize：パレットデータサイズ
  =======================================================================*/
-int CTga::Create(const TGAHeader &header, uint8 *pImage, const uint32 imageSize, uint8 *pPalette, const uint32 paletteSize)
+int tgaCreateHeader(struct TGA *pTga, const struct TGAHeader *pHeader, uint8 *pImage, const uint32 imageSize, uint8 *pPalette, const uint32 paletteSize)
 {
 	// 引数チェック
-	if (pImage == NULL || imageSize == 0) return ERROR_IMAGE;
-	if (pPalette != NULL && paletteSize == 0) return ERROR_PALETTE;
-	if (pPalette == NULL && paletteSize != 0) return ERROR_PALETTE;
+	if (pTga == NULL) return TGA_ERROR_IMAGE;
+	if (pImage == NULL || imageSize == 0) return TGA_ERROR_IMAGE;
+	if (pPalette != NULL && paletteSize == 0) return TGA_ERROR_PALETTE;
+	if (pPalette == NULL && paletteSize != 0) return TGA_ERROR_PALETTE;
 
 	// ヘッダーチェック
-	if (!this->CheckSupport(header)) return ERROR_HEADER;
+	if (!_tgaCheckSupport(pHeader)) return TGA_ERROR_HEADER;
 
 	// 既に作成しているなら削除
-	if (m_pImage != NULL) {
-		this->Clear();
+	if (pTga->pImage != NULL) {
+		tgaRelease(pTga);
 	}
 
-	m_Header      = header;
-	m_pImage      = pImage;
-	m_ImageSize   = imageSize;
-	m_pPalette    = pPalette;
-	m_PaletteSize = paletteSize;
+	memcpy(&pTga->header, pHeader, sizeof(pTga->header));
+	pTga->pImage      = pImage;
+	pTga->imageSize   = imageSize;
+	pTga->pPalette    = pPalette;
+	pTga->paletteSize = paletteSize;
 
-	return ERROR_NONE;
+	return TGA_ERROR_NONE;
 }
 
 /*=======================================================================
 【機能】ファイル出力
-【引数】pFileName：出力ファイル名
+【引数】pTga     ：TGA構造体のアドレス
+        pFileName：出力ファイル名
  =======================================================================*/
-int CTga::Output(const char *pFileName)
+int tgaOutput(const struct TGA *pTga, const char *pFileName)
 {
 #ifndef NDEBUG
+	_ASSERT(pTga != NULL);
 	_ASSERT(pFileName != NULL);
 #else
-	if (pFileName == NULL) return ERROR_OUTPUT;
+	if (pTga == NULL || pFileName == NULL) return TGA_ERROR_OUTPUT;
 #endif
 
 	// 読み込まれていない？
-	if (m_pImage == NULL) return ERROR_NONE;
+	if (pTga->pImage == NULL) return TGA_ERROR_NONE;
 
 	// 出力ファイルオープン
 	FILE *fp;
 	if ((fp = fopen(pFileName, "wb")) == NULL) {
 		DBG_PRINT("file can't open!\n");
-		return ERROR_OPEN;
+		return TGA_ERROR_OPEN;
 	}
 
 	// ヘッダー出力
-	this->WriteHeader(fp);
+	tgaWriteHeader(fp, &pTga->header);
 
 	// パレット出力
-	if (m_pPalette != NULL) {
-		fwrite(m_pPalette, m_PaletteSize, 1, fp);
+	if (pTga->pPalette != NULL) {
+		fwrite(pTga->pPalette, pTga->paletteSize, 1, fp);
 	}
 
 	// イメージ出力
-	fwrite(m_pImage, m_ImageSize, 1, fp);
+	fwrite(pTga->pImage, pTga->imageSize, 1, fp);
 
 	// フッター出力
-	this->WriteFooter(fp);
+	tgaWriteFooter(fp, &pTga->footer);
 
 	fclose(fp);
 
-	return ERROR_NONE;
+	return TGA_ERROR_NONE;
 }
 
 /*=======================================================================
 【機能】BMP出力
-【引数】pFileName：出力ファイル名
+【引数】pTga     ：TGA構造体のアドレス
+        pFileName：出力ファイル名
  =======================================================================*/
-int CTga::OutputBMP(const char *pFileName)
+int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
 {
 #ifndef NDEBUG
+	_ASSERT(pTga != NULL);
 	_ASSERT(pFileName != NULL);
 #else
-	if (pFileName == NULL) return ERROR_OUTPUT;
+	if (pTga == NULL) return TGA_ERROR_IMAGE;
+	if (pFileName == NULL) return TGA_ERROR_OUTPUT;
 #endif
 
 	// 読み込まれていない？
-	if (m_pImage == NULL) return ERROR_NONE;
+	if (pTga->pImage == NULL) return TGA_ERROR_NONE;
 
 	// 出力ファイルオープン
 	FILE *fp;
 	if ((fp = fopen(pFileName, "wb")) == NULL) {
 		DBG_PRINT("file can't open!\n");
-		return ERROR_OPEN;
+		return TGA_ERROR_OPEN;
 	}
 
 	// BMPヘッダー作成
@@ -472,19 +483,19 @@ int CTga::OutputBMP(const char *pFileName)
 
 	hsize = sizeof(BITMAPFILEHEADER);
 	isize = sizeof(BITMAPINFOHEADER);
-	psize = sizeof(RGBQUAD) * m_Header.paletteColor;
+	psize = sizeof(RGBQUAD) * pTga->header.paletteColor;
 
 	bmHead.bfType = 0x4D42; //BM
-	bmHead.bfSize = m_ImageSize + hsize + isize + psize;
+	bmHead.bfSize = pTga->imageSize + hsize + isize + psize;
 	bmHead.bfReserved1 = 0;
 	bmHead.bfReserved2 = 0;
 	bmHead.bfOffBits   = hsize + isize + psize;
 
 	bmInfo.biSize   = isize;
-	bmInfo.biWidth  = m_Header.imageW;
-	bmInfo.biHeight = m_Header.imageH;
+	bmInfo.biWidth  = pTga->header.imageW;
+	bmInfo.biHeight = pTga->header.imageH;
 	bmInfo.biPlanes = 1;
-	bmInfo.biBitCount = m_Header.imageBit;
+	bmInfo.biBitCount = pTga->header.imageBit;
 
 
 	// ヘッダー出力
@@ -492,67 +503,68 @@ int CTga::OutputBMP(const char *pFileName)
 	fwrite(&bmInfo, isize, 1, fp);
 
 	// パレット出力
-	if (m_pPalette != NULL) {
-		if (m_Header.paletteBit == 24) {
-			uint8 *pPalette = m_pPalette;
+	if (pTga->pPalette != NULL) {
+		if (pTga->header.paletteBit == 24) {
+			uint8 *pPalette = pTga->pPalette;
 			uint8 alpha = 0x00;
 
-			for (int i = 0; i < m_Header.paletteColor; i++) {
+			for (int i = 0; i < pTga->header.paletteColor; i++) {
 				fwrite(pPalette++, sizeof(uint8), 1, fp);
 				fwrite(pPalette++, sizeof(uint8), 1, fp);
 				fwrite(pPalette++, sizeof(uint8), 1, fp);
 				fwrite(&alpha    , sizeof(uint8), 1, fp);
 			}
 		} else {
-			fwrite(m_pPalette, m_PaletteSize, 1, fp);
+			fwrite(pTga->pPalette, pTga->paletteSize, 1, fp);
 		}
 	}
 
 	// イメージ出力（幅が4で割れない画像への対応はしていません）
-	this->ConvertType(IMAGE_LINE_LRDU); // 左→右、下→上配列に変換
-	fwrite(m_pImage, m_ImageSize, 1, fp);
+	tgaConvertType(pTga, TGA_IMAGE_LINE_LRDU); // 左→右、下→上配列に変換
+	fwrite(pTga->pImage, pTga->imageSize, 1, fp);
 
 	fclose(fp);
 
-	return ERROR_NONE;
+	return TGA_ERROR_NONE;
 }
 
 /*=======================================================================
 【機能】BGRA配列をRGBA配列に変更
+【引数】pTga：TGA構造体のアドレス
 【備考】RGBAに変更したあと再度呼ぶとBGRA配列になります。
  =======================================================================*/
-bool CTga::ConvertRGBA(void)
+bool tgaConvertRGBA(struct TGA *pTga)
 {
-	if (m_pImage == NULL) return false;
+	if (pTga == NULL || pTga->pImage == NULL) return false;
 
 	uint8 r, b;
 	uint8 byte;
 	uint32 offset;
 
 	// パレット
-	if (m_pPalette) {
-		byte = m_Header.paletteBit >> 3;
+	if (pTga->pPalette) {
+		byte = pTga->header.paletteBit >> 3;
 
-		for (offset = 0; offset < m_PaletteSize; offset += byte) {
-			r = m_pPalette[offset + 2];
-			b = m_pPalette[offset + 0];
-			m_pPalette[offset + 2] = b;
-			m_pPalette[offset + 0] = r;
+		for (offset = 0; offset < pTga->paletteSize; offset += byte) {
+			r = pTga->pPalette[offset + 2];
+			b = pTga->pPalette[offset + 0];
+			pTga->pPalette[offset + 2] = b;
+			pTga->pPalette[offset + 0] = r;
 		}
 	}
 
 	// イメージ
-	byte = m_Header.imageBit >> 3;
+	byte = pTga->header.imageBit >> 3;
 
-	if (m_Header.imageBit <= 8) {
+	if (pTga->header.imageBit <= 8) {
 		// IndexColorなら処理しない
 		return true;
-	} else if (m_Header.imageBit == 16) {
+	} else if (pTga->header.imageBit == 16) {
 		uint16 r, g, b, a;
-		uint16 *pImage = reinterpret_cast<uint16*>(m_pImage);
+		uint16 *pImage = (uint16*)pTga->pImage;
 
 		// RGBA:5551
-		for (offset = 0; offset < m_ImageSize; offset += byte) {
+		for (offset = 0; offset < pTga->imageSize; offset += byte) {
 			a = (*pImage & 0x8000);
 			r = (*pImage & 0x7c00) >> 10;
 			g = (*pImage & 0x03e0);
@@ -560,11 +572,11 @@ bool CTga::ConvertRGBA(void)
 			*pImage++ = (a | r | g | b);
 		}
 	} else {
-		for (offset = 0; offset < m_ImageSize; offset += byte) {
-			r = m_pImage[offset + 2];
-			b = m_pImage[offset + 0];
-			m_pImage[offset + 2] = b;
-			m_pImage[offset + 0] = r;
+		for (offset = 0; offset < pTga->imageSize; offset += byte) {
+			r = pTga->pImage[offset + 2];
+			b = pTga->pImage[offset + 0];
+			pTga->pImage[offset + 2] = b;
+			pTga->pImage[offset + 0] = r;
 		}
 	}
 
@@ -573,20 +585,21 @@ bool CTga::ConvertRGBA(void)
 
 /*=======================================================================
 【機能】指定のビット配列に変換
-【引数】type：ラインタイプ
+【引数】pTga：TGA構造体のアドレス
+        type：ラインタイプ
  =======================================================================*/
-bool CTga::ConvertType(const sint32 type)
+bool tgaConvertType(struct TGA *pTga, const sint32 type)
 {
-	if (type >= IMAGE_LINE_MAX) return false;
-	if (m_pImage == NULL) return false;
+	if (type >= TGA_IMAGE_LINE_MAX) return false;
+	if (pTga == NULL || pTga->pImage == NULL) return false;
 
 	// 一緒なら処理なし
-	if ((m_Header.discripter & 0xf0) == type) return true;
+	if ((pTga->header.discripter & 0xf0) == type) return true;
 
 	uint8 *pImage;
 
 	// 変換用のメモリ確保
-	if ((pImage = new uint8[m_ImageSize]) == NULL) {
+	if ((pImage = (uint8*)malloc(pTga->imageSize)) == NULL) {
 		return false;
 	}
 
@@ -595,51 +608,51 @@ bool CTga::ConvertType(const sint32 type)
 	uint32 ofsSrc, ofsDst;
 
 	ofsDst = 0;
-	for (int y = 0; y < m_Header.imageH; y++) {
+	for (int y = 0; y < pTga->header.imageH; y++) {
 		ty = y;
-		if ((m_Header.discripter & 0x20) != (type & 0x20)) {
+		if ((pTga->header.discripter & 0x20) != (type & 0x20)) {
 			// お互いのY方向が一致しないなら反転
-			ty = m_Header.imageH - y - 1;
+			ty = pTga->header.imageH - y - 1;
 		}
 
-		for (int x = 0; x < m_Header.imageW; x++) {
+		for (int x = 0; x < pTga->header.imageW; x++) {
 			tx = x;
-			if ((m_Header.discripter & 0x10) != (type & 0x10)) {
+			if ((pTga->header.discripter & 0x10) != (type & 0x10)) {
 				// お互いのX方向が一致しないなら反転
-				tx = m_Header.imageW - x - 1;
+				tx = pTga->header.imageW - x - 1;
 			}
-			ofsSrc = (ty * m_Header.imageW) + tx;
+			ofsSrc = (ty * pTga->header.imageW) + tx;
 
-			if (m_Header.imageBit == 8) {
-				pImage[ofsDst++] = m_pImage[ofsSrc];
+			if (pTga->header.imageBit == 8) {
+				pImage[ofsDst++] = pTga->pImage[ofsSrc];
 
-			} else if (m_Header.imageBit == 16) {
-				uint16 *pSrc = reinterpret_cast<uint16*>(m_pImage);
-				uint16 *pDst = reinterpret_cast<uint16*>(pImage);
+			} else if (pTga->header.imageBit == 16) {
+				uint16 *pSrc = (uint16*)pTga->pImage;
+				uint16 *pDst = (uint16*)pImage;
 				pDst[ofsDst++] = pSrc[ofsSrc];
 
-			} else if (m_Header.imageBit == 24) {
+			} else if (pTga->header.imageBit == 24) {
 				ofsSrc *= 3;
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
 
-			} else if (m_Header.imageBit == 32) {
+			} else if (pTga->header.imageBit == 32) {
 				ofsSrc *= 4;
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
-				pImage[ofsDst++] = m_pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
+				pImage[ofsDst++] = pTga->pImage[ofsSrc++];
 			}
 		}
 	}
 
 	// 元を破棄して変換後のデータを保持
-	SAFE_DELETES(m_pImage);
-	m_pImage = pImage;
+	SAFE_FREE(pTga->pImage);
+	pTga->pImage = pImage;
 
 	// イメージ記述子を変更
-	m_Header.discripter = type;
+	pTga->header.discripter = type;
 
 	return true;
 }
@@ -648,7 +661,7 @@ bool CTga::ConvertType(const sint32 type)
 【機能】構造体情報の解放
 【引数】pTga：TGA構造体のアドレス
  =======================================================================*/
-void tgaRelease(struct TGA pTga)
+void tgaRelease(struct TGA *pTga)
 {
 	SAFE_FREE(pTga->pImage);
 	SAFE_FREE(pTga->pPalette);
@@ -656,8 +669,8 @@ void tgaRelease(struct TGA pTga)
 	memset(&pTga->header, 0, sizeof(pTga->header));
 	memset(&pTga->footer, 0, sizeof(pTga->footer));
 
-	m_ImageSize   = 0;
-	m_PaletteSize = 0;
+	pTga->imageSize   = 0;
+	pTga->paletteSize = 0;
 }
 
 /*=======================================================================

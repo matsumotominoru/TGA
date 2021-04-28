@@ -2,6 +2,67 @@
 #include "tga.h"
 
 /*=======================================================================
+【機能】RLE圧縮解凍
+【引数】pTga：TGA構造体のアドレス
+        pDst：展開先
+        pSrc：画像データアドレス
+        size：画像データサイズ
+【備考】非公開
+ =======================================================================*/
+uint32 _tgaUnpackRLE(struct TGA *pTga, uint8 *pDst, const uint8 *pSrc, const uint32 size)
+{
+#ifndef NDEBUG
+	_ASSERT(pSrc != NULL);
+	_ASSERT(pDst != NULL);
+#else
+	if (pSrc == NULL || pDst == NULL) return false;
+#endif
+
+	bool bFlg;
+	uint16 loop;
+	uint32 offset  = 0;
+	uint32 count   = 0;
+
+	uint8 byte = pTga->header.imageBit >> 3; // バイトサイズ
+
+	while (count < pTga->imageSize) {
+		bFlg = (pSrc[offset] & 0x80) ? false : true; // 上位ビットが0ならリテラルグループ
+		loop = (pSrc[offset] & 0x7f) + 1;
+		offset++;
+
+		if (bFlg) {
+			// リテラルグループ
+			// 制御バイトの後ろ（pSrc[offset] & 0x7f)+1個のデータ（ピクセルバイト単位）をコピーする
+			for (uint16 i = 0; i < loop; i++) {
+				for (uint32 j = 0; j < byte; j++) {
+					pDst[count++] = pSrc[offset++];
+				}
+			}
+		} else {
+			// 反復
+			// 次に続くデータバイト（ピクセルバイト単位）を（pSrc[offset] & 0x7f)+1回繰り返す
+			for (uint16 i = 0; i < loop; i++) {
+				for (uint32 j = 0; j < byte; j++) {
+					pDst[count++] = pSrc[offset + j];
+				}
+			}
+			offset += byte;
+		}
+
+		// 解凍のしすぎチェック
+		if (offset > size) {
+			DBG_PRINT("UnpackRLE error!!\n");
+			_ASSERT(0);
+			return -1;
+		}
+	}
+
+	_ASSERT(count == pTga->imageSize);
+
+	return offset;
+}
+
+/*=======================================================================
 【機能】対応チェック
 【引数】pHeader：TGAヘッダーアドレス
 【備考】非公開
@@ -50,8 +111,7 @@ bool _tgaReadHeader(const uint8 *pSrc, struct TGAHeader *pHeader)
 	_ASSERT(pSrc != NULL);
 	_ASSERT(pHeader != NULL);
 #else
-	if (pSrc == NULL) return false;
-	if (pHeader == NULL) return false;
+	if (pSrc == NULL || pHeader == NULL) return false;
 #endif
 
 	uint32 offset = 0;
@@ -87,8 +147,7 @@ void _tgaReadFooter(const uint8 *pSrc, const uint32 offset, struct TGAFooter *pF
 	_ASSERT(pSrc != NULL);
 	_ASSERT(pFooter != NULL);
 #else
-	if (pSrc == NULL) return;
-	if (pFooter == NULL) return;
+	if (pSrc == NULL || pFooter == NULL) return;
 #endif
 
 	uint32 offs = offset;
@@ -125,32 +184,34 @@ bool _tgaCalcSize(struct TGA *pTga, const bool bFlg)
 
 /*=======================================================================
 【機能】Image読み込み
-【引数】pSrc  ：画像データアドレス
+【引数】pTga  ：TGA構造体のアドレス
+        pSrc  ：画像データアドレス
         size  ：画像データサイズ
         offset：保存先元イメージサイズ（RLEの場合は圧縮時のサイズ）
 【備考】非公開
  =======================================================================*/
-bool CTga::ReadImage(const uint8 *pSrc, const uint32 size, uint32 *pOffset)
+bool _tgaReadImage(struct TGA *pTga, const uint8 *pSrc, const uint32 size, uint32 *pOffset)
 {
 #ifndef NDEBUG
 	_ASSERT(pSrc != NULL);
-	_ASSERT(m_pImage != NULL);
+	_ASSERT(pTga != NULL);
+	_ASSERT(pTga->pImage != NULL);
 #else
-	if (pSrc == NULL || m_pImage == NULL) return false;
+	if (pSrc == NULL || pTga == NULL || pTga->pImage == NULL) return false;
 #endif
 
-	uint8 *pWork  = const_cast<uint8*>(pSrc) + HEADER_SIZE + m_Header.IDField + m_PaletteSize;
-	uint8 *pImage = m_pImage;
+	uint8 *pWork  = (uint8*)pSrc + TGA_HEADER_SIZE + pTga->header.IDField + pTga->paletteSize;
+	uint8 *pImage = pTga->pImage;
 	uint32 offset = 0;
 
-	if (IMAGE_TYPE_INDEX_RLE <= m_Header.imageType && m_Header.imageType < IMAGE_TYPE_RLE_MAX) {
+	if (TGA_IMAGE_TYPE_INDEX_RLE <= pTga->header.imageType && pTga->header.imageType < TGA_IMAGE_TYPE_RLE_MAX) {
 		// RLE圧縮
-		offset = this->UnpackRLE(m_pImage, pWork, size);
-		if (offset == static_cast<uint32>(-1)) return false;
+		offset = _tgaUnpackRLE(pTga, pImage, pWork, size);
+		if (offset == (uint32)(-1)) return false;
 	} else {
 		// 非圧縮
-		memcpy(pImage, pWork, m_ImageSize);
-		offset = m_ImageSize;
+		memcpy(pImage, pWork, pTga->imageSize);
+		offset = pTga->imageSize;
 	}
 
 	if (pOffset != NULL) *pOffset = offset;
@@ -160,39 +221,41 @@ bool CTga::ReadImage(const uint8 *pSrc, const uint32 size, uint32 *pOffset)
 
 /*=======================================================================
 【機能】Palette読み込み
-【引数】pSrc：画像データアドレス
+【引数】pTga：TGA構造体のアドレス
+        pSrc：画像データアドレス
 【備考】非公開
  =======================================================================*/
-bool CTga::ReadPalette(const uint8 *pSrc)
+bool _tgaReadPalette(struct TGA *pTga, const uint8 *pSrc)
 {
 #ifndef NDEBUG
 	_ASSERT(pSrc != NULL);
+	_ASSERT(pTga != NULL);
 #else
-	if (pSrc == NULL) return false;
+	if (pSrc == NULL || pTga == NULL) return false;
 #endif
 
 	// IndexColor?
-	if (m_Header.imageType != IMAGE_TYPE_INDEX && m_Header.imageType != IMAGE_TYPE_INDEX_RLE) {
+	if (pTga->header.imageType != TGA_IMAGE_TYPE_INDEX && pTga->header.imageType != TGA_IMAGE_TYPE_INDEX_RLE) {
 		return true;
 	}
 
 	// Palette OK?
-	if (m_pPalette == NULL) return false;
+	if (pTga->pPalette == NULL) return false;
 
-	uint8 *pWork = const_cast<uint8*>(pSrc) + HEADER_SIZE + m_Header.IDField;
-	uint8 *pPalette = m_pPalette;
+	uint8 *pWork = (uint8*)pSrc + TGA_HEADER_SIZE + pTga->header.IDField;
+	uint8 *pPalette = pTga->pPalette;
 	uint16 i; // VC6.0ではコンパイルが通らないので外に出す
 
-	switch (m_Header.paletteBit) {
+	switch (pTga->header.paletteBit) {
 	case 24:
-		for (i = 0; i < m_Header.paletteColor; i++) {
+		for (i = 0; i < pTga->header.paletteColor; i++) {
 			*pPalette++ = *pWork++;
 			*pPalette++ = *pWork++;
 			*pPalette++ = *pWork++;
 		}
 		break;
 	case 32:
-		for (i = 0; i < m_Header.paletteColor; i++) {
+		for (i = 0; i < pTga->header.paletteColor; i++) {
 			*pPalette++ = *pWork++;
 			*pPalette++ = *pWork++;
 			*pPalette++ = *pWork++;
@@ -205,70 +268,6 @@ bool CTga::ReadPalette(const uint8 *pSrc)
 	}
 
 	return true;
-}
-
-/*=======================================================================
-【機能】RLE圧縮解凍
-【引数】pDst：展開先
-        pSrc：画像データアドレス
-        size：画像データサイズ
-【備考】非公開
- =======================================================================*/
-uint32 CTga::UnpackRLE(uint8 *pDst, const uint8 *pSrc, const uint32 size)
-{
-#ifndef NDEBUG
-	_ASSERT(pSrc != NULL);
-	_ASSERT(pDst != NULL);
-#else
-	if (pSrc == NULL || pDst == NULL) return false;
-#endif
-
-	bool bFlg;
-	uint16 loop;
-	uint32 offset  = 0;
-//	uint32 endAddr = reinterpret_cast<uint32>(pDst) + m_ImageSize;
-	uint32 count   = 0;
-
-	uint8 byte = m_Header.imageBit >> 3; // バイトサイズ
-
-//	while (reinterpret_cast<uint32>(pDst) < endAddr) {
-	while (count < m_ImageSize) {
-		bFlg = (pSrc[offset] & 0x80) ? false : true; // 上位ビットが0ならリテラルグループ
-		loop = (pSrc[offset] & 0x7f) + 1;
-		offset++;
-
-		if (bFlg) {
-			// リテラルグループ
-			// 制御バイトの後ろ（pSrc[offset] & 0x7f)+1個のデータ（ピクセルバイト単位）をコピーする
-			for (uint16 i = 0; i < loop; i++) {
-				for (uint32 j = 0; j < byte; j++) {
-//					*pDst++ = pSrc[offset++];
-					pDst[count++] = pSrc[offset++];
-				}
-			}
-		} else {
-			// 反復
-			// 次に続くデータバイト（ピクセルバイト単位）を（pSrc[offset] & 0x7f)+1回繰り返す
-			for (uint16 i = 0; i < loop; i++) {
-				for (uint32 j = 0; j < byte; j++) {
-//					*pDst++ = pSrc[offset + j];
-					pDst[count++] = pSrc[offset + j];
-				}
-			}
-			offset += byte;
-		}
-
-		// 解凍のしすぎチェック
-		if (offset > size) {
-			DBG_PRINT("UnpackRLE error!!\n");
-			_ASSERT(0);
-			return -1;
-		}
-	}
-
-	_ASSERT(count == m_ImageSize);
-
-	return offset;
 }
 
 

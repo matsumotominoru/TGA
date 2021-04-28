@@ -2,12 +2,12 @@
 #include "tga.h"
 
 /*=======================================================================
-y‹@”\zRLEˆ³k‰ğ“€
-yˆø”zpTgaFTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pDstF“WŠJæ
-        pSrcF‰æ‘œƒf[ƒ^ƒAƒhƒŒƒX
-        sizeF‰æ‘œƒf[ƒ^ƒTƒCƒY
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘RLEåœ§ç¸®è§£å‡
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pDstï¼šå±•é–‹å…ˆ
+        pSrcï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        sizeï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 uint32 _tgaUnpackRLE(struct TGA *pTga, uint8 *pDst, const uint8 *pSrc, const uint32 size)
 {
@@ -23,24 +23,24 @@ uint32 _tgaUnpackRLE(struct TGA *pTga, uint8 *pDst, const uint8 *pSrc, const uin
 	uint32 offset  = 0;
 	uint32 count   = 0;
 
-	uint8 byte = pTga->header.imageBit >> 3; // ƒoƒCƒgƒTƒCƒY
+	uint8 byte = pTga->header.imageBit >> 3; // ãƒã‚¤ãƒˆã‚µã‚¤ã‚º
 
 	while (count < pTga->imageSize) {
-		bFlg = (pSrc[offset] & 0x80) ? false : true; // ãˆÊƒrƒbƒg‚ª0‚È‚çƒŠƒeƒ‰ƒ‹ƒOƒ‹[ƒv
+		bFlg = (pSrc[offset] & 0x80) ? false : true; // ä¸Šä½ãƒ“ãƒƒãƒˆãŒ0ãªã‚‰ãƒªãƒ†ãƒ©ãƒ«ã‚°ãƒ«ãƒ¼ãƒ—
 		loop = (pSrc[offset] & 0x7f) + 1;
 		offset++;
 
 		if (bFlg) {
-			// ƒŠƒeƒ‰ƒ‹ƒOƒ‹[ƒv
-			// §ŒäƒoƒCƒg‚ÌŒã‚ëipSrc[offset] & 0x7f)+1ŒÂ‚Ìƒf[ƒ^iƒsƒNƒZƒ‹ƒoƒCƒg’PˆÊj‚ğƒRƒs[‚·‚é
+			// ãƒªãƒ†ãƒ©ãƒ«ã‚°ãƒ«ãƒ¼ãƒ—
+			// åˆ¶å¾¡ãƒã‚¤ãƒˆã®å¾Œã‚ï¼ˆpSrc[offset] & 0x7f)+1å€‹ã®ãƒ‡ãƒ¼ã‚¿ï¼ˆãƒ”ã‚¯ã‚»ãƒ«ãƒã‚¤ãƒˆå˜ä½ï¼‰ã‚’ã‚³ãƒ”ãƒ¼ã™ã‚‹
 			for (uint16 i = 0; i < loop; i++) {
 				for (uint32 j = 0; j < byte; j++) {
 					pDst[count++] = pSrc[offset++];
 				}
 			}
 		} else {
-			// ”½•œ
-			// Ÿ‚É‘±‚­ƒf[ƒ^ƒoƒCƒgiƒsƒNƒZƒ‹ƒoƒCƒg’PˆÊj‚ğipSrc[offset] & 0x7f)+1‰ñŒJ‚è•Ô‚·
+			// åå¾©
+			// æ¬¡ã«ç¶šããƒ‡ãƒ¼ã‚¿ãƒã‚¤ãƒˆï¼ˆãƒ”ã‚¯ã‚»ãƒ«ãƒã‚¤ãƒˆå˜ä½ï¼‰ã‚’ï¼ˆpSrc[offset] & 0x7f)+1å›ç¹°ã‚Šè¿”ã™
 			for (uint16 i = 0; i < loop; i++) {
 				for (uint32 j = 0; j < byte; j++) {
 					pDst[count++] = pSrc[offset + j];
@@ -49,7 +49,7 @@ uint32 _tgaUnpackRLE(struct TGA *pTga, uint8 *pDst, const uint8 *pSrc, const uin
 			offset += byte;
 		}
 
-		// ‰ğ“€‚Ì‚µ‚·‚¬ƒ`ƒFƒbƒN
+		// è§£å‡ã®ã—ã™ããƒã‚§ãƒƒã‚¯
 		if (offset > size) {
 			DBG_PRINT("UnpackRLE error!!\n");
 			_ASSERT(0);
@@ -63,9 +63,9 @@ uint32 _tgaUnpackRLE(struct TGA *pTga, uint8 *pDst, const uint8 *pSrc, const uin
 }
 
 /*=======================================================================
-y‹@”\z‘Î‰ƒ`ƒFƒbƒN
-yˆø”zpHeaderFTGAƒwƒbƒ_[ƒAƒhƒŒƒX
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘å¯¾å¿œãƒã‚§ãƒƒã‚¯
+ã€å¼•æ•°ã€‘pHeaderï¼šTGAãƒ˜ãƒƒãƒ€ãƒ¼ã‚¢ãƒ‰ãƒ¬ã‚¹
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 bool _tgaCheckSupport(const struct TGAHeader *pHeader)
 {
@@ -75,22 +75,22 @@ bool _tgaCheckSupport(const struct TGAHeader *pHeader)
 	if (pHeader == NULL) return false;
 #endif
 
-	// Œ´“_‚ª0‚Å‚Í‚È‚¢H
+	// åŸç‚¹ãŒ0ã§ã¯ãªã„ï¼Ÿ
 	if (pHeader->imageX != 0 && pHeader->imageY != 0) return false;
 	
-	// ‘Î‰‚µ‚Ä‚¢‚È‚¢ƒCƒ[ƒWƒ^ƒCƒvH
+	// å¯¾å¿œã—ã¦ã„ãªã„ã‚¤ãƒ¡ãƒ¼ã‚¸ã‚¿ã‚¤ãƒ—ï¼Ÿ
 	if (!((TGA_IMAGE_TYPE_NONE < pHeader->imageType && pHeader->imageType < TGA_IMAGE_TYPE_MAX) ||
 		  (TGA_IMAGE_TYPE_INDEX_RLE <= pHeader->imageType && pHeader->imageType < TGA_IMAGE_TYPE_RLE_MAX))) {
 		return false;
 	}
 
-	// ‘Î‰ƒrƒbƒgH
+	// å¯¾å¿œãƒ“ãƒƒãƒˆï¼Ÿ
 	if (pHeader->imageBit !=  8 && pHeader->imageBit != 16 &&
 		pHeader->imageBit != 24 && pHeader->imageBit != 32) {
 		return false;
 	}
 
-	// ‘Î‰ƒpƒŒƒbƒgH
+	// å¯¾å¿œãƒ‘ãƒ¬ãƒƒãƒˆï¼Ÿ
 	if (pHeader->usePalette) {
 		if (pHeader->paletteIndex != 0) return false;
 		if (pHeader->paletteBit != 24 && pHeader->paletteBit != 32) return false;
@@ -100,10 +100,10 @@ bool _tgaCheckSupport(const struct TGAHeader *pHeader)
 }
 
 /*=======================================================================
-y‹@”\zTGAƒwƒbƒ_[“Ç‚İ‚İ
-yˆø”zpSrc   F‰æ‘œƒf[ƒ^ƒAƒhƒŒƒX
-        pHeaderFTGAƒwƒbƒ_[ƒAƒhƒŒƒX
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘TGAãƒ˜ãƒƒãƒ€ãƒ¼èª­ã¿è¾¼ã¿
+ã€å¼•æ•°ã€‘pSrc   ï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pHeaderï¼šTGAãƒ˜ãƒƒãƒ€ãƒ¼ã‚¢ãƒ‰ãƒ¬ã‚¹
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 bool _tgaReadHeader(const uint8 *pSrc, struct TGAHeader *pHeader)
 {
@@ -135,11 +135,11 @@ bool _tgaReadHeader(const uint8 *pSrc, struct TGAHeader *pHeader)
 }
 
 /*=======================================================================
-y‹@”\zTGAƒtƒbƒ^[“Ç‚İ‚İ
-yˆø”zpSrc@ F‰æ‘œƒf[ƒ^ƒAƒhƒŒƒX
-        offset Fƒtƒbƒ^[‚Ü‚Å‚ÌƒIƒtƒZƒbƒg
-		pFooterFTGAƒtƒbƒ^[ƒAƒhƒŒƒX
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘TGAãƒ•ãƒƒã‚¿ãƒ¼èª­ã¿è¾¼ã¿
+ã€å¼•æ•°ã€‘pSrcã€€ ï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        offset ï¼šãƒ•ãƒƒã‚¿ãƒ¼ã¾ã§ã®ã‚ªãƒ•ã‚»ãƒƒãƒˆ
+		pFooterï¼šTGAãƒ•ãƒƒã‚¿ãƒ¼ã‚¢ãƒ‰ãƒ¬ã‚¹
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 void _tgaReadFooter(const uint8 *pSrc, const uint32 offset, struct TGAFooter *pFooter)
 {
@@ -160,10 +160,10 @@ void _tgaReadFooter(const uint8 *pSrc, const uint32 offset, struct TGAFooter *pF
 }
 
 /*=======================================================================
-y‹@”\zImage/PaletteƒTƒCƒY‚ğ‹‚ß‚é
-yˆø”zpTgaFTGA\‘¢‘ÌƒAƒhƒŒƒX
-        bFlgFƒƒ‚ƒŠŠm•Û‚ğs‚¤H
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘Image/Paletteã‚µã‚¤ã‚ºã‚’æ±‚ã‚ã‚‹
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã‚¢ãƒ‰ãƒ¬ã‚¹
+        bFlgï¼šãƒ¡ãƒ¢ãƒªç¢ºä¿ã‚’è¡Œã†ï¼Ÿ
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 bool _tgaCalcSize(struct TGA *pTga, const bool bFlg)
 {
@@ -173,7 +173,7 @@ bool _tgaCalcSize(struct TGA *pTga, const bool bFlg)
 	if (bFlg) {
 		if ((pTga->pImage = (uint8*)malloc(pTga->imageSize)) == NULL) return false;
 
-		// ƒpƒŒƒbƒg‚ ‚è‚È‚çƒƒ‚ƒŠŠm•Û
+		// ãƒ‘ãƒ¬ãƒƒãƒˆã‚ã‚Šãªã‚‰ãƒ¡ãƒ¢ãƒªç¢ºä¿
 		if (pTga->header.usePalette) {
 			if ((pTga->pPalette = (uint8*)malloc(pTga->paletteSize)) == NULL) return false;
 		}
@@ -183,12 +183,12 @@ bool _tgaCalcSize(struct TGA *pTga, const bool bFlg)
 }
 
 /*=======================================================================
-y‹@”\zImage“Ç‚İ‚İ
-yˆø”zpTga  FTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pSrc  F‰æ‘œƒf[ƒ^ƒAƒhƒŒƒX
-        size  F‰æ‘œƒf[ƒ^ƒTƒCƒY
-        offsetF•Û‘¶æŒ³ƒCƒ[ƒWƒTƒCƒYiRLE‚Ìê‡‚Íˆ³k‚ÌƒTƒCƒYj
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘Imageèª­ã¿è¾¼ã¿
+ã€å¼•æ•°ã€‘pTga  ï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pSrc  ï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        size  ï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
+        offsetï¼šä¿å­˜å…ˆå…ƒã‚¤ãƒ¡ãƒ¼ã‚¸ã‚µã‚¤ã‚ºï¼ˆRLEã®å ´åˆã¯åœ§ç¸®æ™‚ã®ã‚µã‚¤ã‚ºï¼‰
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 bool _tgaReadImage(struct TGA *pTga, const uint8 *pSrc, const uint32 size, uint32 *pOffset)
 {
@@ -205,11 +205,11 @@ bool _tgaReadImage(struct TGA *pTga, const uint8 *pSrc, const uint32 size, uint3
 	uint32 offset = 0;
 
 	if (TGA_IMAGE_TYPE_INDEX_RLE <= pTga->header.imageType && pTga->header.imageType < TGA_IMAGE_TYPE_RLE_MAX) {
-		// RLEˆ³k
+		// RLEåœ§ç¸®
 		offset = _tgaUnpackRLE(pTga, pImage, pWork, size);
 		if (offset == (uint32)(-1)) return false;
 	} else {
-		// ”ñˆ³k
+		// éåœ§ç¸®
 		memcpy(pImage, pWork, pTga->imageSize);
 		offset = pTga->imageSize;
 	}
@@ -220,10 +220,10 @@ bool _tgaReadImage(struct TGA *pTga, const uint8 *pSrc, const uint32 size, uint3
 }
 
 /*=======================================================================
-y‹@”\zPalette“Ç‚İ‚İ
-yˆø”zpTgaFTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pSrcF‰æ‘œƒf[ƒ^ƒAƒhƒŒƒX
-y”õlz”ñŒöŠJ
+ã€æ©Ÿèƒ½ã€‘Paletteèª­ã¿è¾¼ã¿
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pSrcï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+ã€å‚™è€ƒã€‘éå…¬é–‹
  =======================================================================*/
 bool _tgaReadPalette(struct TGA *pTga, const uint8 *pSrc)
 {
@@ -244,7 +244,7 @@ bool _tgaReadPalette(struct TGA *pTga, const uint8 *pSrc)
 
 	uint8 *pWork = (uint8*)pSrc + TGA_HEADER_SIZE + pTga->header.IDField;
 	uint8 *pPalette = pTga->pPalette;
-	uint16 i; // VC6.0‚Å‚ÍƒRƒ“ƒpƒCƒ‹‚ª’Ê‚ç‚È‚¢‚Ì‚ÅŠO‚Éo‚·
+	uint16 i; // VC6.0ã§ã¯ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«ãŒé€šã‚‰ãªã„ã®ã§å¤–ã«å‡ºã™
 
 	switch (pTga->header.paletteBit) {
 	case 24:
@@ -274,9 +274,9 @@ bool _tgaReadPalette(struct TGA *pTga, const uint8 *pSrc)
 
 
 /*=======================================================================
-y‹@”\zƒtƒ@ƒCƒ‹“Ç‚İ‚İ
-yˆø”zpTga     F TGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pFileNameFƒtƒ@ƒCƒ‹–¼
+ã€æ©Ÿèƒ½ã€‘ãƒ•ã‚¡ã‚¤ãƒ«èª­ã¿è¾¼ã¿
+ã€å¼•æ•°ã€‘pTga     ï¼š TGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pFileNameï¼šãƒ•ã‚¡ã‚¤ãƒ«å
  =======================================================================*/
 int tgaCreateFile(struct TGA *pTga, const char *pFileName)
 {
@@ -309,7 +309,7 @@ int tgaCreateFile(struct TGA *pTga, const char *pFileName)
 	fread(mem, size, 1, fp);
 	fclose(fp);
 
-	// “Ç‚İ‚İ
+	// èª­ã¿è¾¼ã¿
 	int ret = tgaCreateMemory(pTga, mem, size);
 	SAFE_FREE(mem);
 
@@ -317,10 +317,10 @@ int tgaCreateFile(struct TGA *pTga, const char *pFileName)
 }
 
 /*=======================================================================
-y‹@”\zƒƒ‚ƒŠ‚©‚çì¬
-yˆø”zpTgaFTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pSrcF‰æ‘œƒf[ƒ^ƒAƒhƒŒƒX
-        sizeF‰æ‘œƒf[ƒ^ƒTƒCƒY
+ã€æ©Ÿèƒ½ã€‘ãƒ¡ãƒ¢ãƒªã‹ã‚‰ä½œæˆ
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pSrcï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        sizeï¼šç”»åƒãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
  =======================================================================*/
 int tgaCreateMemory(struct TGA *pTga, const void *pSrc, const uint32 size)
 {
@@ -334,35 +334,35 @@ int tgaCreateMemory(struct TGA *pTga, const void *pSrc, const uint32 size)
 	if (pTga == NULL || pSrc == NULL || size == 0) return TGA_ERROR_HEADER;
 #endif
 
-	// Šù‚Éì¬‚µ‚Ä‚¢‚é‚È‚çíœ
+	// æ—¢ã«ä½œæˆã—ã¦ã„ã‚‹ãªã‚‰å‰Šé™¤
 	if (pTga->pImage != NULL) {
 		tgaRelease(pTga);
 	}
 
-	// ƒwƒbƒ_[“Ç‚İ‚İ
+	// ãƒ˜ãƒƒãƒ€ãƒ¼èª­ã¿è¾¼ã¿
 	if (!_tgaReadHeader((const uint8*)pSrc, &pTga->header)) {
 		return TGA_ERROR_HEADER;
 	}
 
-	// Image‚ÆPalette‚ÌƒTƒCƒY‚ğ‹‚ß‚é
+	// Imageã¨Paletteã®ã‚µã‚¤ã‚ºã‚’æ±‚ã‚ã‚‹
 	if (!_tgaCalcSize(pTga, true)) {
 		tgaRelease(pTga);
 		return TGA_ERROR_MEMORY;
 	}
 
-	// ƒpƒŒƒbƒg“Ç‚İ‚İ
+	// ãƒ‘ãƒ¬ãƒƒãƒˆèª­ã¿è¾¼ã¿
 	if (!_tgaReadPalette(pTga, (const uint8*)pSrc)) {
 		tgaRelease(pTga);
 		return TGA_ERROR_PALETTE;
 	}
 
-	// ƒCƒ[ƒW“Ç‚İ‚İ
+	// ã‚¤ãƒ¡ãƒ¼ã‚¸èª­ã¿è¾¼ã¿
 	if (!_tgaReadImage(pTga, (const uint8*)pSrc, size, &offset)) {
 		tgaRelease(pTga);
 		return TGA_ERROR_IMAGE;
 	}
 
-	// ƒtƒbƒ^[“Ç‚İ‚İ
+	// ãƒ•ãƒƒã‚¿ãƒ¼èª­ã¿è¾¼ã¿
 	offset += TGA_HEADER_SIZE + pTga->header.IDField + pTga->paletteSize;
 	if ((size - offset) >= TGA_FOOTER_SIZE) {
 		_tgaReadFooter((const uint8*)pSrc, offset, &pTga->footer);
@@ -372,26 +372,26 @@ int tgaCreateMemory(struct TGA *pTga, const void *pSrc, const uint32 size)
 }
 
 /*=======================================================================
-y‹@”\zw’èƒf[ƒ^‚©‚çì¬
-yˆø”zpTga       FTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pHeader    FTGAƒwƒbƒ_[‚ÌƒAƒhƒŒƒX
-        pImage     FƒCƒ[ƒWƒf[ƒ^ƒAƒhƒŒƒX
-        imageSize  FƒCƒ[ƒWƒf[ƒ^ƒTƒCƒY
-        pPalette   FƒpƒŒƒbƒgƒf[ƒ^ƒAƒhƒŒƒX
-        paletteSizeFƒpƒŒƒbƒgƒf[ƒ^ƒTƒCƒY
+ã€æ©Ÿèƒ½ã€‘æŒ‡å®šãƒ‡ãƒ¼ã‚¿ã‹ã‚‰ä½œæˆ
+ã€å¼•æ•°ã€‘pTga       ï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pHeader    ï¼šTGAãƒ˜ãƒƒãƒ€ãƒ¼ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pImage     ï¼šã‚¤ãƒ¡ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        imageSize  ï¼šã‚¤ãƒ¡ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
+        pPalette   ï¼šãƒ‘ãƒ¬ãƒƒãƒˆãƒ‡ãƒ¼ã‚¿ã‚¢ãƒ‰ãƒ¬ã‚¹
+        paletteSizeï¼šãƒ‘ãƒ¬ãƒƒãƒˆãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
  =======================================================================*/
 int tgaCreateHeader(struct TGA *pTga, const struct TGAHeader *pHeader, uint8 *pImage, const uint32 imageSize, uint8 *pPalette, const uint32 paletteSize)
 {
-	// ˆø”ƒ`ƒFƒbƒN
+	// å¼•æ•°ãƒã‚§ãƒƒã‚¯
 	if (pTga == NULL) return TGA_ERROR_IMAGE;
 	if (pImage == NULL || imageSize == 0) return TGA_ERROR_IMAGE;
 	if (pPalette != NULL && paletteSize == 0) return TGA_ERROR_PALETTE;
 	if (pPalette == NULL && paletteSize != 0) return TGA_ERROR_PALETTE;
 
-	// ƒwƒbƒ_[ƒ`ƒFƒbƒN
+	// ãƒ˜ãƒƒãƒ€ãƒ¼ãƒã‚§ãƒƒã‚¯
 	if (!_tgaCheckSupport(pHeader)) return TGA_ERROR_HEADER;
 
-	// Šù‚Éì¬‚µ‚Ä‚¢‚é‚È‚çíœ
+	// æ—¢ã«ä½œæˆã—ã¦ã„ã‚‹ãªã‚‰å‰Šé™¤
 	if (pTga->pImage != NULL) {
 		tgaRelease(pTga);
 	}
@@ -406,9 +406,9 @@ int tgaCreateHeader(struct TGA *pTga, const struct TGAHeader *pHeader, uint8 *pI
 }
 
 /*=======================================================================
-y‹@”\zƒtƒ@ƒCƒ‹o—Í
-yˆø”zpTga     FTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pFileNameFo—Íƒtƒ@ƒCƒ‹–¼
+ã€æ©Ÿèƒ½ã€‘ãƒ•ã‚¡ã‚¤ãƒ«å‡ºåŠ›
+ã€å¼•æ•°ã€‘pTga     ï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pFileNameï¼šå‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«å
  =======================================================================*/
 int tgaOutput(const struct TGA *pTga, const char *pFileName)
 {
@@ -419,28 +419,28 @@ int tgaOutput(const struct TGA *pTga, const char *pFileName)
 	if (pTga == NULL || pFileName == NULL) return TGA_ERROR_OUTPUT;
 #endif
 
-	// “Ç‚İ‚Ü‚ê‚Ä‚¢‚È‚¢H
+	// èª­ã¿è¾¼ã¾ã‚Œã¦ã„ãªã„ï¼Ÿ
 	if (pTga->pImage == NULL) return TGA_ERROR_NONE;
 
-	// o—Íƒtƒ@ƒCƒ‹ƒI[ƒvƒ“
+	// å‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³
 	FILE *fp;
 	if ((fp = fopen(pFileName, "wb")) == NULL) {
 		DBG_PRINT("file can't open!\n");
 		return TGA_ERROR_OPEN;
 	}
 
-	// ƒwƒbƒ_[o—Í
+	// ãƒ˜ãƒƒãƒ€ãƒ¼å‡ºåŠ›
 	tgaWriteHeader(fp, &pTga->header);
 
-	// ƒpƒŒƒbƒgo—Í
+	// ãƒ‘ãƒ¬ãƒƒãƒˆå‡ºåŠ›
 	if (pTga->pPalette != NULL) {
 		fwrite(pTga->pPalette, pTga->paletteSize, 1, fp);
 	}
 
-	// ƒCƒ[ƒWo—Í
+	// ã‚¤ãƒ¡ãƒ¼ã‚¸å‡ºåŠ›
 	fwrite(pTga->pImage, pTga->imageSize, 1, fp);
 
-	// ƒtƒbƒ^[o—Í
+	// ãƒ•ãƒƒã‚¿ãƒ¼å‡ºåŠ›
 	tgaWriteFooter(fp, &pTga->footer);
 
 	fclose(fp);
@@ -449,9 +449,9 @@ int tgaOutput(const struct TGA *pTga, const char *pFileName)
 }
 
 /*=======================================================================
-y‹@”\zBMPo—Í
-yˆø”zpTga     FTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        pFileNameFo—Íƒtƒ@ƒCƒ‹–¼
+ã€æ©Ÿèƒ½ã€‘BMPå‡ºåŠ›
+ã€å¼•æ•°ã€‘pTga     ï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        pFileNameï¼šå‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«å
  =======================================================================*/
 int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
 {
@@ -463,17 +463,17 @@ int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
 	if (pFileName == NULL) return TGA_ERROR_OUTPUT;
 #endif
 
-	// “Ç‚İ‚Ü‚ê‚Ä‚¢‚È‚¢H
+	// èª­ã¿è¾¼ã¾ã‚Œã¦ã„ãªã„ï¼Ÿ
 	if (pTga->pImage == NULL) return TGA_ERROR_NONE;
 
-	// o—Íƒtƒ@ƒCƒ‹ƒI[ƒvƒ“
+	// å‡ºåŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³
 	FILE *fp;
 	if ((fp = fopen(pFileName, "wb")) == NULL) {
 		DBG_PRINT("file can't open!\n");
 		return TGA_ERROR_OPEN;
 	}
 
-	// BMPƒwƒbƒ_[ì¬
+	// BMPãƒ˜ãƒƒãƒ€ãƒ¼ä½œæˆ
 	uint32 hsize, isize, psize;
 	BITMAPFILEHEADER bmHead;
 	BITMAPINFOHEADER bmInfo;
@@ -498,11 +498,11 @@ int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
 	bmInfo.biBitCount = pTga->header.imageBit;
 
 
-	// ƒwƒbƒ_[o—Í
+	// ãƒ˜ãƒƒãƒ€ãƒ¼å‡ºåŠ›
 	fwrite(&bmHead, hsize, 1, fp);
 	fwrite(&bmInfo, isize, 1, fp);
 
-	// ƒpƒŒƒbƒgo—Í
+	// ãƒ‘ãƒ¬ãƒƒãƒˆå‡ºåŠ›
 	if (pTga->pPalette != NULL) {
 		if (pTga->header.paletteBit == 24) {
 			uint8 *pPalette = pTga->pPalette;
@@ -519,8 +519,8 @@ int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
 		}
 	}
 
-	// ƒCƒ[ƒWo—Íi•‚ª4‚ÅŠ„‚ê‚È‚¢‰æ‘œ‚Ö‚Ì‘Î‰‚Í‚µ‚Ä‚¢‚Ü‚¹‚ñj
-	tgaConvertType(pTga, TGA_IMAGE_LINE_LRDU); // ¶¨‰EA‰º¨ã”z—ñ‚É•ÏŠ·
+	// ã‚¤ãƒ¡ãƒ¼ã‚¸å‡ºåŠ›ï¼ˆå¹…ãŒ4ã§å‰²ã‚Œãªã„ç”»åƒã¸ã®å¯¾å¿œã¯ã—ã¦ã„ã¾ã›ã‚“ï¼‰
+	tgaConvertType(pTga, TGA_IMAGE_LINE_LRDU); // å·¦â†’å³ã€ä¸‹â†’ä¸Šé…åˆ—ã«å¤‰æ›
 	fwrite(pTga->pImage, pTga->imageSize, 1, fp);
 
 	fclose(fp);
@@ -529,9 +529,9 @@ int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
 }
 
 /*=======================================================================
-y‹@”\zBGRA”z—ñ‚ğRGBA”z—ñ‚É•ÏX
-yˆø”zpTgaFTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-y”õlzRGBA‚É•ÏX‚µ‚½‚ ‚ÆÄ“xŒÄ‚Ô‚ÆBGRA”z—ñ‚É‚È‚è‚Ü‚·B
+ã€æ©Ÿèƒ½ã€‘BGRAé…åˆ—ã‚’RGBAé…åˆ—ã«å¤‰æ›´
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+ã€å‚™è€ƒã€‘RGBAã«å¤‰æ›´ã—ãŸã‚ã¨å†åº¦å‘¼ã¶ã¨BGRAé…åˆ—ã«ãªã‚Šã¾ã™ã€‚
  =======================================================================*/
 bool tgaConvertRGBA(struct TGA *pTga)
 {
@@ -541,7 +541,7 @@ bool tgaConvertRGBA(struct TGA *pTga)
 	uint8 byte;
 	uint32 offset;
 
-	// ƒpƒŒƒbƒg
+	// ãƒ‘ãƒ¬ãƒƒãƒˆ
 	if (pTga->pPalette) {
 		byte = pTga->header.paletteBit >> 3;
 
@@ -553,11 +553,11 @@ bool tgaConvertRGBA(struct TGA *pTga)
 		}
 	}
 
-	// ƒCƒ[ƒW
+	// ã‚¤ãƒ¡ãƒ¼ã‚¸
 	byte = pTga->header.imageBit >> 3;
 
 	if (pTga->header.imageBit <= 8) {
-		// IndexColor‚È‚çˆ—‚µ‚È‚¢
+		// IndexColorãªã‚‰å‡¦ç†ã—ãªã„
 		return true;
 	} else if (pTga->header.imageBit == 16) {
 		uint16 r, g, b, a;
@@ -584,26 +584,26 @@ bool tgaConvertRGBA(struct TGA *pTga)
 }
 
 /*=======================================================================
-y‹@”\zw’è‚Ìƒrƒbƒg”z—ñ‚É•ÏŠ·
-yˆø”zpTgaFTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
-        typeFƒ‰ƒCƒ“ƒ^ƒCƒv
+ã€æ©Ÿèƒ½ã€‘æŒ‡å®šã®ãƒ“ãƒƒãƒˆé…åˆ—ã«å¤‰æ›
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+        typeï¼šãƒ©ã‚¤ãƒ³ã‚¿ã‚¤ãƒ—
  =======================================================================*/
 bool tgaConvertType(struct TGA *pTga, const sint32 type)
 {
 	if (type >= TGA_IMAGE_LINE_MAX) return false;
 	if (pTga == NULL || pTga->pImage == NULL) return false;
 
-	// ˆê‚È‚çˆ—‚È‚µ
+	// ä¸€ç·’ãªã‚‰å‡¦ç†ãªã—
 	if ((pTga->header.discripter & 0xf0) == type) return true;
 
 	uint8 *pImage;
 
-	// •ÏŠ·—p‚Ìƒƒ‚ƒŠŠm•Û
+	// å¤‰æ›ç”¨ã®ãƒ¡ãƒ¢ãƒªç¢ºä¿
 	if ((pImage = (uint8*)malloc(pTga->imageSize)) == NULL) {
 		return false;
 	}
 
-	// ”z—ñ•ÏŠ·
+	// é…åˆ—å¤‰æ›
 	uint16 tx, ty;
 	uint32 ofsSrc, ofsDst;
 
@@ -611,14 +611,14 @@ bool tgaConvertType(struct TGA *pTga, const sint32 type)
 	for (int y = 0; y < pTga->header.imageH; y++) {
 		ty = y;
 		if ((pTga->header.discripter & 0x20) != (type & 0x20)) {
-			// ‚¨Œİ‚¢‚ÌY•ûŒü‚ªˆê’v‚µ‚È‚¢‚È‚ç”½“]
+			// ãŠäº’ã„ã®Yæ–¹å‘ãŒä¸€è‡´ã—ãªã„ãªã‚‰åè»¢
 			ty = pTga->header.imageH - y - 1;
 		}
 
 		for (int x = 0; x < pTga->header.imageW; x++) {
 			tx = x;
 			if ((pTga->header.discripter & 0x10) != (type & 0x10)) {
-				// ‚¨Œİ‚¢‚ÌX•ûŒü‚ªˆê’v‚µ‚È‚¢‚È‚ç”½“]
+				// ãŠäº’ã„ã®Xæ–¹å‘ãŒä¸€è‡´ã—ãªã„ãªã‚‰åè»¢
 				tx = pTga->header.imageW - x - 1;
 			}
 			ofsSrc = (ty * pTga->header.imageW) + tx;
@@ -647,19 +647,19 @@ bool tgaConvertType(struct TGA *pTga, const sint32 type)
 		}
 	}
 
-	// Œ³‚ğ”jŠü‚µ‚Ä•ÏŠ·Œã‚Ìƒf[ƒ^‚ğ•Û
+	// å…ƒã‚’ç ´æ£„ã—ã¦å¤‰æ›å¾Œã®ãƒ‡ãƒ¼ã‚¿ã‚’ä¿æŒ
 	SAFE_FREE(pTga->pImage);
 	pTga->pImage = pImage;
 
-	// ƒCƒ[ƒW‹Lqq‚ğ•ÏX
+	// ã‚¤ãƒ¡ãƒ¼ã‚¸è¨˜è¿°å­ã‚’å¤‰æ›´
 	pTga->header.discripter = type;
 
 	return true;
 }
 
 /*=======================================================================
-y‹@”\z\‘¢‘Ìî•ñ‚Ì‰ğ•ú
-yˆø”zpTgaFTGA\‘¢‘Ì‚ÌƒAƒhƒŒƒX
+ã€æ©Ÿèƒ½ã€‘æ§‹é€ ä½“æƒ…å ±ã®è§£æ”¾
+ã€å¼•æ•°ã€‘pTgaï¼šTGAæ§‹é€ ä½“ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
  =======================================================================*/
 void tgaRelease(struct TGA *pTga)
 {
@@ -674,10 +674,10 @@ void tgaRelease(struct TGA *pTga)
 }
 
 /*=======================================================================
-y‹@”\zTGAƒwƒbƒ_[o—Í
-yˆø”zfp     FFILEƒ|ƒCƒ“ƒ^
-        pHeaderFo—Í‚·‚éTGAƒwƒbƒ_[
-y”õlzƒAƒ‰ƒCƒƒ“ƒg‚É‰ˆ‚Á‚Ä‚¢‚È‚¢‚Ì‚ÅŒÂ•Êo—ÍB
+ã€æ©Ÿèƒ½ã€‘TGAãƒ˜ãƒƒãƒ€ãƒ¼å‡ºåŠ›
+ã€å¼•æ•°ã€‘fp     ï¼šFILEãƒã‚¤ãƒ³ã‚¿
+        pHeaderï¼šå‡ºåŠ›ã™ã‚‹TGAãƒ˜ãƒƒãƒ€ãƒ¼
+ã€å‚™è€ƒã€‘ã‚¢ãƒ©ã‚¤ãƒ¡ãƒ³ãƒˆã«æ²¿ã£ã¦ã„ãªã„ã®ã§å€‹åˆ¥å‡ºåŠ›ã€‚
  =======================================================================*/
 bool tgaWriteHeader(FILE *fp, struct TGAHeader *pHeader)
 {
@@ -688,10 +688,10 @@ bool tgaWriteHeader(FILE *fp, struct TGAHeader *pHeader)
 	if (fp == NULL || pHeader == NULL) return false;
 #endif
 
-	// TODO:RLEˆ³ko—Í‘Î‰
-	//      2008/04/01“_‚Å‚Í”ñ‘Î‰
+	// TODO:RLEåœ§ç¸®å‡ºåŠ›å¯¾å¿œ
+	//      2008/04/01æ™‚ç‚¹ã§ã¯éå¯¾å¿œ
 	if (TGA_IMAGE_TYPE_INDEX_RLE <= pHeader->imageType && pHeader->imageType < TGA_IMAGE_TYPE_RLE_MAX) {
-		pHeader->imageType -= 8; // ”ñˆ³k‚É‚·‚é
+		pHeader->imageType -= 8; // éåœ§ç¸®ã«ã™ã‚‹
 	}
 
 	fwrite(&pHeader->IDField     , sizeof(pHeader->IDField)     , 1, fp);
@@ -711,10 +711,10 @@ bool tgaWriteHeader(FILE *fp, struct TGAHeader *pHeader)
 }
 
 /*=======================================================================
-y‹@”\zTGAƒtƒbƒ^[o—Í
-yˆø”zfp     FFILEƒ|ƒCƒ“ƒ^
-        pHeaderFo—Í‚·‚éTGAƒtƒbƒ^[
-y”õlzƒAƒ‰ƒCƒƒ“ƒg‚É‰ˆ‚Á‚Ä‚¢‚È‚¢‚Ì‚ÅŒÂ•Êo—ÍB
+ã€æ©Ÿèƒ½ã€‘TGAãƒ•ãƒƒã‚¿ãƒ¼å‡ºåŠ›
+ã€å¼•æ•°ã€‘fp     ï¼šFILEãƒã‚¤ãƒ³ã‚¿
+        pHeaderï¼šå‡ºåŠ›ã™ã‚‹TGAãƒ•ãƒƒã‚¿ãƒ¼
+ã€å‚™è€ƒã€‘ã‚¢ãƒ©ã‚¤ãƒ¡ãƒ³ãƒˆã«æ²¿ã£ã¦ã„ãªã„ã®ã§å€‹åˆ¥å‡ºåŠ›ã€‚
  =======================================================================*/
 bool tgaWriteFooter(FILE *fp, struct TGAFooter *pFooter)
 {
@@ -725,7 +725,7 @@ bool tgaWriteFooter(FILE *fp, struct TGAFooter *pFooter)
 	if (fp == NULL || pFooter == NULL) return false;
 #endif
 
-	// Œ³‰æ‘œ‚Éƒtƒbƒ^[‚ª•t‚¢‚Ä‚¢‚½‚©ƒ`ƒFƒbƒN
+	// å…ƒç”»åƒã«ãƒ•ãƒƒã‚¿ãƒ¼ãŒä»˜ã„ã¦ã„ãŸã‹ãƒã‚§ãƒƒã‚¯
 	int ret = 0;
 	for (int i = 0; i < 18; i++) {
 		ret += pFooter->version[i];

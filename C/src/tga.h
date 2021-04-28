@@ -1,74 +1,74 @@
 #ifndef _TGA_H_
 #define _TGA_H_
 
-// ƒCƒ[ƒWƒ^ƒCƒv
+// ã‚¤ãƒ¡ãƒ¼ã‚¸ã‚¿ã‚¤ãƒ—
 enum {
-	TGA_IMAGE_TYPE_NONE = 0,		// ƒCƒ[ƒW‚È‚µ
-	TGA_IMAGE_TYPE_INDEX,			// 256F
-	TGA_IMAGE_TYPE_FULL,			// ƒtƒ‹ƒJƒ‰[
-	TGA_IMAGE_TYPE_GRAY,			// ”’•
+	TGA_IMAGE_TYPE_NONE = 0,		// ã‚¤ãƒ¡ãƒ¼ã‚¸ãªã—
+	TGA_IMAGE_TYPE_INDEX,			// 256è‰²
+	TGA_IMAGE_TYPE_FULL,			// ãƒ•ãƒ«ã‚«ãƒ©ãƒ¼
+	TGA_IMAGE_TYPE_GRAY,			// ç™½é»’
 	TGA_IMAGE_TYPE_MAX,
-	TGA_IMAGE_TYPE_INDEX_RLE = 9,	// 256F(RLEˆ³k)
-	TGA_IMAGE_TYPE_FULL_RLE,		// ƒtƒ‹ƒJƒ‰[(RLEˆ³k)
-	TGA_IMAGE_TYPE_GRAY_RLE,		// ”’•(RLEˆ³k)
+	TGA_IMAGE_TYPE_INDEX_RLE = 9,	// 256è‰²(RLEåœ§ç¸®)
+	TGA_IMAGE_TYPE_FULL_RLE,		// ãƒ•ãƒ«ã‚«ãƒ©ãƒ¼(RLEåœ§ç¸®)
+	TGA_IMAGE_TYPE_GRAY_RLE,		// ç™½é»’(RLEåœ§ç¸®)
 	TGA_IMAGE_TYPE_RLE_MAX
 };
 
-// ƒsƒNƒZƒ‹‚Ì•À‚Ñ
+// ãƒ”ã‚¯ã‚»ãƒ«ã®ä¸¦ã³
 enum {
-	TGA_IMAGE_LINE_LRDU = 0x00,		// ¶¨‰EA‰º¨ã
-	TGA_IMAGE_LINE_RLDU = 0x10,		// ‰E¨¶A‰º¨ã
-	TGA_IMAGE_LINE_LRUD = 0x20,		// ¶¨‰EAã¨‰º
-	TGA_IMAGE_LINE_RLUD = 0x30,		// ‰E¨¶Aã¨‰º
+	TGA_IMAGE_LINE_LRDU = 0x00,		// å·¦â†’å³ã€ä¸‹â†’ä¸Š
+	TGA_IMAGE_LINE_RLDU = 0x10,		// å³â†’å·¦ã€ä¸‹â†’ä¸Š
+	TGA_IMAGE_LINE_LRUD = 0x20,		// å·¦â†’å³ã€ä¸Šâ†’ä¸‹
+	TGA_IMAGE_LINE_RLUD = 0x30,		// å³â†’å·¦ã€ä¸Šâ†’ä¸‹
 	TGA_IMAGE_LINE_MAX
 };
 
 enum {
-	TGA_HEADER_SIZE = 0x12,			// ƒwƒbƒ_[ƒTƒCƒY
-	TGA_FOOTER_SIZE = 0x1a			// ƒtƒbƒ^[ƒTƒCƒY
+	TGA_HEADER_SIZE = 0x12,			// ãƒ˜ãƒƒãƒ€ãƒ¼ã‚µã‚¤ã‚º
+	TGA_FOOTER_SIZE = 0x1a			// ãƒ•ãƒƒã‚¿ãƒ¼ã‚µã‚¤ã‚º
 };
 
-// ƒGƒ‰[ƒ^ƒCƒv
+// ã‚¨ãƒ©ãƒ¼ã‚¿ã‚¤ãƒ—
 enum {
-	TGA_ERROR_OPEN    = -1,			// ƒtƒ@ƒCƒ‹ƒI[ƒvƒ“Ž¸”s
-	TGA_ERROR_MEMORY  = -2,			// ƒƒ‚ƒŠŠm•ÛŽ¸”s
-	TGA_ERROR_HEADER  = -3,			// ƒTƒ|[ƒg‚µ‚Ä‚¢‚È‚¢Œ`Ž®
-	TGA_ERROR_PALETTE = -4,			// ƒpƒŒƒbƒgƒf[ƒ^‚ª•s³
-	TGA_ERROR_IMAGE   = -5,			// ƒCƒ[ƒWƒf[ƒ^‚ª•s³
-	TGA_ERROR_OUTPUT  = -6,			// o—ÍƒGƒ‰[
-	TGA_ERROR_NONE    =  1,			// ƒGƒ‰[‚È‚µ
+	TGA_ERROR_OPEN    = -1,			// ãƒ•ã‚¡ã‚¤ãƒ«ã‚ªãƒ¼ãƒ—ãƒ³å¤±æ•—
+	TGA_ERROR_MEMORY  = -2,			// ãƒ¡ãƒ¢ãƒªç¢ºä¿å¤±æ•—
+	TGA_ERROR_HEADER  = -3,			// ã‚µãƒãƒ¼ãƒˆã—ã¦ã„ãªã„å½¢å¼
+	TGA_ERROR_PALETTE = -4,			// ãƒ‘ãƒ¬ãƒƒãƒˆãƒ‡ãƒ¼ã‚¿ãŒä¸æ­£
+	TGA_ERROR_IMAGE   = -5,			// ã‚¤ãƒ¡ãƒ¼ã‚¸ãƒ‡ãƒ¼ã‚¿ãŒä¸æ­£
+	TGA_ERROR_OUTPUT  = -6,			// å‡ºåŠ›ã‚¨ãƒ©ãƒ¼
+	TGA_ERROR_NONE    =  1,			// ã‚¨ãƒ©ãƒ¼ãªã—
 	TGA_ERROR_MAX
 };
 
 struct TGAHeader {
-	uint8	IDField;			// IDƒtƒB[ƒ‹ƒh‚ÌƒTƒCƒY
-	uint8	usePalette;			// ƒpƒŒƒbƒgŽg—pH
-	uint8	imageType;			// ƒCƒ[ƒWŒ`Ž®
-	uint16	paletteIndex;		// ƒpƒŒƒbƒgIndex
-	uint16	paletteColor;		// ƒpƒŒƒbƒg‚ÌF”
-	uint8	paletteBit;			// 1ƒpƒŒƒbƒg‚Ìƒrƒbƒg”
-	uint16	imageX;				// ƒCƒ[ƒWXŒ´“_
-	uint16	imageY;				// ƒCƒ[ƒWYŒ´“_
-	uint16	imageW;				// ƒCƒ[ƒW•
-	uint16	imageH;				// ƒCƒ[ƒW‚‚³
-	uint8	imageBit;			// ƒCƒ[ƒWƒrƒbƒg”
-	uint8	discripter;			// ƒCƒ[ƒW‹LqŽq
+	uint8	IDField;			// IDãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã®ã‚µã‚¤ã‚º
+	uint8	usePalette;			// ãƒ‘ãƒ¬ãƒƒãƒˆä½¿ç”¨ï¼Ÿ
+	uint8	imageType;			// ã‚¤ãƒ¡ãƒ¼ã‚¸å½¢å¼
+	uint16	paletteIndex;		// ãƒ‘ãƒ¬ãƒƒãƒˆIndex
+	uint16	paletteColor;		// ãƒ‘ãƒ¬ãƒƒãƒˆã®è‰²æ•°
+	uint8	paletteBit;			// 1ãƒ‘ãƒ¬ãƒƒãƒˆã®ãƒ“ãƒƒãƒˆæ•°
+	uint16	imageX;				// ã‚¤ãƒ¡ãƒ¼ã‚¸XåŽŸç‚¹
+	uint16	imageY;				// ã‚¤ãƒ¡ãƒ¼ã‚¸YåŽŸç‚¹
+	uint16	imageW;				// ã‚¤ãƒ¡ãƒ¼ã‚¸å¹…
+	uint16	imageH;				// ã‚¤ãƒ¡ãƒ¼ã‚¸é«˜ã•
+	uint8	imageBit;			// ã‚¤ãƒ¡ãƒ¼ã‚¸ãƒ“ãƒƒãƒˆæ•°
+	uint8	discripter;			// ã‚¤ãƒ¡ãƒ¼ã‚¸è¨˜è¿°å­
 };
 
 struct TGAFooter {
-	uint32	filePos;			// ƒtƒ@ƒCƒ‹‚ÌˆÊ’u(ƒGƒNƒXƒeƒ“ƒVƒ‡ƒ“ƒGƒŠƒA‚ÌˆÊ’u?)
-	uint32	fileDev;			// developer directory ƒtƒ@ƒCƒ‹ˆÊ’u
-	uint8	version[18];		// hTRUEVISION-TARGAh‚Ì•¶Žšiversion[17]==0x00j
+	uint32	filePos;			// ãƒ•ã‚¡ã‚¤ãƒ«ã®ä½ç½®(ã‚¨ã‚¯ã‚¹ãƒ†ãƒ³ã‚·ãƒ§ãƒ³ã‚¨ãƒªã‚¢ã®ä½ç½®?)
+	uint32	fileDev;			// developer directory ãƒ•ã‚¡ã‚¤ãƒ«ä½ç½®
+	uint8	version[18];		// â€TRUEVISION-TARGAâ€ã®æ–‡å­—ï¼ˆversion[17]==0x00ï¼‰
 };
 
 struct TGA {
 	struct TGAHeader	header;
 	struct TGAFooter	footer;
 
-	uint8	*pImage;			// ƒsƒNƒZƒ‹ƒf[ƒ^
-	uint8	*pPalette;			// ƒpƒŒƒbƒgƒf[ƒ^
-	uint32	imageSize;			// ƒsƒNƒZƒ‹ƒf[ƒ^ƒTƒCƒY
-	uint32	paletteSize;		// ƒpƒŒƒbƒgƒf[ƒ^ƒTƒCƒY
+	uint8	*pImage;			// ãƒ”ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿
+	uint8	*pPalette;			// ãƒ‘ãƒ¬ãƒƒãƒˆãƒ‡ãƒ¼ã‚¿
+	uint32	imageSize;			// ãƒ”ã‚¯ã‚»ãƒ«ãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
+	uint32	paletteSize;		// ãƒ‘ãƒ¬ãƒƒãƒˆãƒ‡ãƒ¼ã‚¿ã‚µã‚¤ã‚º
 };
 
 static MTOINLINE uint8 *tgaGetImage(const struct TGA *pTga)

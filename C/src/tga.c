@@ -410,7 +410,7 @@ int tgaCreateHeader(struct TGA *pTga, const struct TGAHeader *pHeader, uint8 *pI
 【引数】pTga     ：TGA構造体のアドレス
         pFileName：出力ファイル名
  =======================================================================*/
-int tgaOutput(const struct TGA *pTga, const char *pFileName)
+int tgaOutput(struct TGA *pTga, const char *pFileName)
 {
 #ifndef NDEBUG
 	_ASSERT(pTga != NULL);
@@ -453,7 +453,7 @@ int tgaOutput(const struct TGA *pTga, const char *pFileName)
 【引数】pTga     ：TGA構造体のアドレス
         pFileName：出力ファイル名
  =======================================================================*/
-int tgaOutputBMP(const struct TGA *pTga, const char *pFileName)
+int tgaOutputBMP(struct TGA *pTga, const char *pFileName)
 {
 #ifndef NDEBUG
 	_ASSERT(pTga != NULL);

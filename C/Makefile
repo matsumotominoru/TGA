@@ -10,7 +10,7 @@ SRCDIR      =  $(TOPDIR)/src
 STUBDIR     = 
 
 ##--- target/sorce
-TARGET      = blankcut
+TARGET      = tgarw
 OBJS        = $(SRCDIR)/main.o \
 			  $(SRCDIR)/tga.o
 LIB_OBJS    = $(OBJS)

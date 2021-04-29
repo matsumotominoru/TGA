@@ -139,8 +139,8 @@ static MTOINLINE void tgaSetFileDev(struct TGA *pTga, const uint32 fileDev)
 int tgaCreateFile(struct TGA *pTga, const char *pFileName);
 int tgaCreateMemory(struct TGA *pTga, const void *pSrc, const uint32 size);
 int tgaCreateHeader(struct TGA *pTga, const struct TGAHeader *pHeader, uint8 *pImage, const uint32 imageSize, uint8 *pPalette, const uint32 paletteSize);
-int tgaOutput(const struct TGA *pTga, const char *pFileName);
-int tgaOutputBMP(const struct TGA *pTga, const char *pFileName);
+int tgaOutput(struct TGA *pTga, const char *pFileName);
+int tgaOutputBMP(struct TGA *pTga, const char *pFileName);
 bool tgaConvertRGBA(struct TGA *pTga);
 bool tgaConvertType(struct TGA *pTga, const sint32 type);
 

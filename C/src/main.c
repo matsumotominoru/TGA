@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
 
 	// TGA作成
 	struct TGA tga;
+	memcls(&tga, sizeof(tga));
 	int ret = tgaCreateFile(&tga, argv[1]);
 
 	if (ret < 0) {

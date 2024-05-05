@@ -1,0 +1,8 @@
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\bin\Debug\test_win.exe
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\bin\Debug\test_win.pdb
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\obj\Debug\test_win.Form1.resources
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\obj\Debug\test_win.Properties.Resources.resources
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\obj\Debug\test_win.csproj.GenerateResource.cache
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\obj\Debug\test_win.csproj.CoreCompileInputs.cache
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\obj\Debug\test_win.exe
+C:\Users\MatsumotoMinoru\Desktop\SourceCode\TGA-master\Csharp\test_win\test_win\obj\Debug\test_win.pdb

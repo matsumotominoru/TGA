@@ -1,0 +1,107 @@
+﻿// ベクトルテスト
+MtoLib.CVector3 v1 = new MtoLib.CVector3(0.0f, 0.0f, 0.0f);
+MtoLib.CVector3 v2 = new MtoLib.CVector3(1.0f, 1.0f, 1.0f);
+v1 += v2;
+v1 += 1.0f;
+
+// 行列テスト
+MtoLib.CMatrix4 m1 = new MtoLib.CMatrix4();
+MtoLib.CMatrix4 m2 = new MtoLib.CMatrix4();
+MtoLib.CMatrix4 m3 = new MtoLib.CMatrix4();
+m1.Identity();
+m2.Identity();
+m3.Identity();
+m1.RotationX(MtoLib.Utility.DEGtoRAD(45));
+m2.RotationY(MtoLib.Utility.DEGtoRAD(30));
+m1 *= m2;
+
+if (m1.Invers(m3))
+{
+    System.Console.Write("逆行列あり\n");
+}
+else
+{
+    System.Console.Write("逆行列なし\n");
+}
+
+// ユーティリティテスト
+int dx = 0;
+MtoLib.Utility.SmoothMmove(128, ref dx, 1);
+MtoLib.Utility.MatApply3(v2, v1, m1);
+
+UInt32 tmp = MtoLib.Utility.GetDigit(12345678, 3);
+System.Console.Write("12345678の3桁目の値は" + tmp + "です。\n");
+
+tmp = MtoLib.Utility.BOUND(100, 16);
+System.Console.Write("100の16アライメントは" + tmp + "です。\n");
+
+MtoLib.Types.RGBAQUAD rgba = new MtoLib.Types.RGBAQUAD(0xffff0000);
+tmp = (UInt32)rgba;
+
+// キーフレームテスト
+MtoLib.KeyData key0 = new MtoLib.KeyData(0.0f, 0.0f);
+MtoLib.KeyData key1 = new MtoLib.KeyData(1.0f, 1.0f);
+MtoLib.CKeyframe keyani = new MtoLib.CKeyframe();
+keyani.SetKeyData(key0);
+keyani.SetKeyData(key1);
+keyani.SetDuration(3000);
+keyani.Start(MtoLib.Utility.timeGetTime());
+int idx = keyani.GetIndex(MtoLib.Utility.timeGetTime());
+
+// GDI+のエンコーダーとデコーダーの対応画像出力
+System.Drawing.Imaging.ImageCodecInfo[] decoders = System.Drawing.Imaging.ImageCodecInfo.GetImageDecoders();
+
+foreach (System.Drawing.Imaging.ImageCodecInfo ici in decoders)
+{
+    Console.WriteLine(
+        ici.FormatDescription + "\t"
+      + ici.FilenameExtension);
+}
+Console.WriteLine("\n");
+
+System.Drawing.Imaging.ImageCodecInfo[] encoders = System.Drawing.Imaging.ImageCodecInfo.GetImageEncoders();
+
+foreach (System.Drawing.Imaging.ImageCodecInfo ici in encoders)
+{
+    Console.WriteLine(
+        ici.FormatDescription + "\t"
+      + ici.FilenameExtension);
+}
+Console.WriteLine("\n");
+
+
+// TGAテスト
+MtoLib.Pict.RESULT ret;
+MtoLib.Pict.TGA tga = new MtoLib.Pict.TGA();
+
+ret = tga.Create("../../dat/pen1_ico32.tga");
+Console.WriteLine("Create result:" + ret.ToString());
+
+tga.ConvertType(MtoLib.Pict.TGA.LINE.IMAGE_LINE_LRUD);
+ret = tga.Output("output32.tga");
+Console.WriteLine("Output result:" + ret.ToString());
+
+ret = tga.OutputBMP("output32.bmp");
+Console.WriteLine("OutputBMP result:" + ret.ToString());
+
+
+// TGA test
+try
+{
+    MtoLib.Pict.TGA.RESULT ret;
+    MtoLib.Pict.TGA tga = new MtoLib.Pict.TGA();
+
+    // ConvertBMP->Set BackgroundImage
+    ret = tga.Create("../../dat/pen1_ico32a.tga");
+    //ret = tga.Create("../../dat/pen1_ico256.tga");
+    Console.WriteLine("Create result:" + ret.ToString());
+
+    Bitmap bmp = null;
+    ret = tga.ConvertBMP(ref bmp);
+    Console.WriteLine("ConvertBMP result:" + ret.ToString());
+    this.BackgroundImage = bmp;
+}
+catch
+{
+    Console.WriteLine("ファイルがないよ");
+}

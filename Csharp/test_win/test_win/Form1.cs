@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 
 namespace test_win
@@ -27,23 +22,23 @@ namespace test_win
 
         private void Form1_Load(object sender, EventArgs e)
         {
-#if NOP
+#if DEBUG//NOP
             // TGA test
             try
             {
                 MtoLib.Pict.RESULT ret;
                 MtoLib.Pict.TGA tga = new MtoLib.Pict.TGA();
 
-                //ret = tga.Create("../../dat/pen1_ico32a.tga");
-                ret = tga.Create("../../dat/pen1_ico256.tga");
+                //ret = tga.Create("../../dat/staffroll1.tga");
+                var file_name = "card_muzai_btn";
+                ret = tga.Create(file_name + ".tga");
                 Console.WriteLine("Create result:" + ret.ToString());
                 if (ret != MtoLib.Pict.RESULT.ERROR_NONE) return;
-
-                /*
+                
                 tga.ConvertBitType(MtoLib.Pict.TGA.LINE.IMAGE_LINE_LRDU);
-                ret = tga.OutputBMP("output32.bmp");
+                ret = tga.OutputBMP(file_name + ".bmp");
                 Console.WriteLine("OutputBMP result:" + ret.ToString());
-                */
+                
 
                 // ConvertBMP->Set BackgroundImage
                 Bitmap bmp = null;
@@ -57,7 +52,7 @@ namespace test_win
             }
 #endif
 
-#if DEBUG
+#if !DEBUG
             // Tim2 test
             try {
                 MtoLib.Pict.RESULT ret;
